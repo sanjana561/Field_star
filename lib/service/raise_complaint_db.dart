@@ -8,31 +8,49 @@ class RaiseComplaintDb {
   final _supabase = Supabase.instance.client;
 
   //=====================Submit complaint=============================
-  Future<void> submitFullComplaint(RaiseComplaintModel model) async {
-    try {
-      await _supabase
-          .from("Raise_complaint")
-          .insert(model.toMap()); 
-    } catch (e) {
-      throw Exception('Failed to insert: $e');
-    }
+Future<void> submitFullComplaint(RaiseComplaintModel model) async {
+  try {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
+
+    await _supabase.from('customer').upsert({
+      'id': user.id,            
+      'cust_name': model.customerName,
+      'cust_phno': model.customerPhone,
+      'cust_location': model.customerLocation,
+      'cust_place': model.customerPlace,
+      'cust_hotelname': model.customerHotelName,
+    });
+
+    final data = model.toMap();
+    data['customer_id'] = user.id;
+
+    await _supabase.from('Raise_complaint').insert(data);
+
+  } catch (e) {
+    throw Exception('Failed to insert: $e');
   }
-
+}
   //============================fetch complaint============================================
-  Future<List<RaiseComplaintModel>>Fetchcomplaints() async{
-    try{
-      final response = await _supabase
-      .from('Raise_complaint')
-      .select()
-      .order('Date', ascending: false);
-      return(response as List)
-      .map((item) => RaiseComplaintModel.fromMap(item))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch: $e');
-    }
+ Future<List<RaiseComplaintModel>> Fetchcomplaints() async {
+  try {
+    final user = _supabase.auth.currentUser; // ← get logged-in user
 
-    }
+    if (user == null) throw Exception('User not logged in');
+
+    final response = await _supabase
+        .from('Raise_complaint')
+        .select()
+        .eq('customer_id', user.id)         
+        .order('created_at', ascending: false);
+
+    return (response as List)
+        .map((item) => RaiseComplaintModel.fromMap(item))
+        .toList();
+  } catch (e) {
+    throw Exception('Failed to fetch: $e');
+  }
+}
 
 
 //==================Upload Images===================================

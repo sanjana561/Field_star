@@ -7,10 +7,19 @@ class RaiseComplaintModel {
   final DateTime? date;
   final String tickectid;
   final String otp;
- final String? imageUrl;  
-  final String? audioUrl;  
+  final String? imageUrl;
+  final String? audioUrl;
   final String? complaintStatus;
   final String? technicianName;
+  final String? customerId;
+
+  // ← ADD customer detail fields
+  final String? customerName;
+  final String? customerPhone;
+  final String? customerLocation;
+  final String? customerPlace;
+  final String? customerHotelName;
+
   RaiseComplaintModel({
     this.id,
     required this.categoryName,
@@ -18,13 +27,21 @@ class RaiseComplaintModel {
     this.problem,
     this.priorityLevel,
     this.date,
-   required this.tickectid,
-   required this.otp, 
-   this.imageUrl,
-    this.audioUrl, this.complaintStatus, this.technicianName,
+    required this.tickectid,
+    required this.otp,
+    this.imageUrl,
+    this.audioUrl,
+    this.complaintStatus,
+    this.technicianName,
+    this.customerId,
+    // ← ADD
+    this.customerName,
+    this.customerPhone,
+    this.customerLocation,
+    this.customerPlace,
+    this.customerHotelName,
   });
 
-  // ✅ Add this
   factory RaiseComplaintModel.fromMap(Map<String, dynamic> map) {
     return RaiseComplaintModel(
       id: map['id'],
@@ -35,12 +52,11 @@ class RaiseComplaintModel {
       date: map['Date'] != null ? DateTime.parse(map['Date']) : null,
       tickectid: map['tickectid'] ?? '',
       otp: map['otp'] ?? '',
-       imageUrl: map['image_url'], 
+      imageUrl: map['image_url'],
       audioUrl: map['audio_url'],
-        complaintStatus: map['tech_status'], 
-        technicianName: map['technician_name'], 
-
-
+      complaintStatus: map['tech_status'],
+      technicianName: map['technician_name'],
+      customerId: map['customer_id'],
     );
   }
 
@@ -51,12 +67,13 @@ class RaiseComplaintModel {
       'problem': problem,
       'priority_level': priorityLevel,
       'Date': date?.toIso8601String(),
-      'tickectid':tickectid,
-      'otp':otp,
-       'image_url': imageUrl, 
+      'tickectid': tickectid,
+      'otp': otp,
+      'image_url': imageUrl,
       'audio_url': audioUrl,
-        'tech_status': complaintStatus, 
-        'technician_name':technicianName
+      'tech_status': complaintStatus,
+      'technician_name': technicianName,
+      'customer_id': customerId,
     };
   }
 }
