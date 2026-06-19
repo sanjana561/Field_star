@@ -7,8 +7,20 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class InvoicePaymentPage extends StatefulWidget {
-  final  String tickectID;
-  const InvoicePaymentPage({super.key, required this.tickectID});
+  final String ticketId;
+  final String technicianId;
+  final String technicianName;
+  final String equipment;
+  final String serviceDate;
+
+  const InvoicePaymentPage({
+    super.key,
+    required this.ticketId,
+    required this.technicianId,
+    required this.technicianName,
+    required this.equipment,
+    required this.serviceDate,
+  });
 
   @override
   State<InvoicePaymentPage> createState() => _InvoicePaymentPageState();
@@ -21,7 +33,11 @@ class InvoicePaymentPage extends StatefulWidget {
     );
   }
 
-  static Widget _invoiceRow(String title, String amount, {bool isBold = false}) {
+  static Widget _invoiceRow(
+    String title,
+    String amount, {
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -85,10 +101,7 @@ class InvoicePaymentPage extends StatefulWidget {
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
               ),
             ],
           ),
@@ -99,7 +112,7 @@ class InvoicePaymentPage extends StatefulWidget {
 }
 
 class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
-  final repo=RaiseComplaintDb();
+  final repo = RaiseComplaintDb();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,8 +120,8 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-      leading:  BackButton(color: Colors.black,),
-        title:  Column(
+        leading: BackButton(color: Colors.black),
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -119,8 +132,8 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-             FutureBuilder<TechModel?>(
-              future: repo.fetchTechDetails(widget.tickectID),
+            FutureBuilder<TechModel?>(
+              future: repo.fetchTechDetails(widget.ticketId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -131,23 +144,22 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                 }
 
                 final techDetails = snapshot.data!;
-          return  Text(
-               'Technician ID: ${techDetails.techId}',
-              style: TextStyle(color: Colors.blueGrey, fontSize: 11),
-            );
-              }
-             )
-  
+                return Text(
+                  'Technician ID: ${techDetails.techId}',
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 11),
+                );
+              },
+            ),
           ],
         ),
         actions: [
-         CircleAvatar(
-  backgroundColor: const Color(0xFFF3F4F6),
-  child: IconButton(
-    icon: const Icon(Icons.download, color: Colors.black87, size: 20),
-    onPressed: downloadReceipt,
-  ),
-),
+          CircleAvatar(
+            backgroundColor: const Color(0xFFF3F4F6),
+            child: IconButton(
+              icon: const Icon(Icons.download, color: Colors.black87, size: 20),
+              onPressed: downloadReceipt,
+            ),
+          ),
           SizedBox(width: 12),
         ],
       ),
@@ -197,15 +209,21 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                   ),
 
                   const SizedBox(height: 8),
-                  const Text("Invoice #INV-2451",
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12)),
-                  const Text("Date: May 25, 2026",
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 11)),
+                  const Text(
+                    "Invoice #INV-2451",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  ),
+                  const Text(
+                    "Date: May 25, 2026",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 11),
+                  ),
 
                   const Divider(height: 28),
 
-                  const Text("Bill To:",
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 12)),
+                  const Text(
+                    "Bill To:",
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                  ),
                   const SizedBox(height: 5),
                   const Text(
                     "Grand Hyatt, Mumbai",
@@ -217,10 +235,22 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                   ),
 
                   const SizedBox(height: 18),
-                  InvoicePaymentPage._invoiceRow("Service Inspection Fee", "Rs. 500"),
-                  InvoicePaymentPage._invoiceRow("Temperature Controller Replacement", "Rs. 3200"),
-                  InvoicePaymentPage._invoiceRow("Thermostat Calibration", "Rs. 800"),
-                  InvoicePaymentPage._invoiceRow("Parts & Materials", "Rs. 1200"),
+                  InvoicePaymentPage._invoiceRow(
+                    "Service Inspection Fee",
+                    "Rs. 500",
+                  ),
+                  InvoicePaymentPage._invoiceRow(
+                    "Temperature Controller Replacement",
+                    "Rs. 3200",
+                  ),
+                  InvoicePaymentPage._invoiceRow(
+                    "Thermostat Calibration",
+                    "Rs. 800",
+                  ),
+                  InvoicePaymentPage._invoiceRow(
+                    "Parts & Materials",
+                    "Rs. 1200",
+                  ),
 
                   const Divider(height: 26),
 
@@ -353,10 +383,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                 children: [
                   const Text(
                     "Other Payment Methods",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 14),
 
@@ -389,9 +416,10 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
         color: Colors.white,
         child: Row(
           children: [
-            Expanded(
+            SizedBox(
+              width: 200,
               child: OutlinedButton.icon(
-                onPressed:downloadReceipt,
+                onPressed: downloadReceipt,
                 icon: const Icon(Icons.download, size: 18),
                 label: const Text("Download"),
                 style: OutlinedButton.styleFrom(
@@ -401,11 +429,20 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(
+            SizedBox(
+              width: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  context.go('/rating');
-                  
+                  context.go(
+                    '/rating',
+                    extra: {
+                      'ticketId': widget.ticketId,
+                      'technicianId': widget.technicianId,
+                      'technicianName': widget.technicianName,
+                      'equipment': widget.equipment,
+                      'serviceDate': widget.serviceDate,
+                    },
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepOrange,
@@ -426,125 +463,112 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
 
   //==============Download Button=====================================
   Future<void> downloadReceipt() async {
-  final font = await PdfGoogleFonts.notoSansRegular();
-final boldFont = await PdfGoogleFonts.notoSansBold();
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final boldFont = await PdfGoogleFonts.notoSansBold();
 
-final pdf = pw.Document();
+    final pdf = pw.Document();
 
-  pdf.addPage(
-    pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      build: (context) {
-        return pw.Padding(
-          padding: const pw.EdgeInsets.all(24),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Text(
-                  'PAYMENT RECEIPT',
-                  style: pw.TextStyle(
-                    fontSize: 24,
-                    fontWeight: pw.FontWeight.bold,
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) {
+          return pw.Padding(
+            padding: const pw.EdgeInsets.all(24),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Center(
+                  child: pw.Text(
+                    'PAYMENT RECEIPT',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
 
-              pw.SizedBox(height: 25),
+                pw.SizedBox(height: 25),
 
-              pw.Text(
-                'Field Star Services',
-                style: pw.TextStyle(
-                  fontSize: 18,
-                    font: boldFont,
+                pw.Text(
+                  'Field Star Services',
+                  style: pw.TextStyle(fontSize: 18, font: boldFont),
                 ),
-              ),
 
-              pw.SizedBox(height: 10),
-              pw.Text('Invoice No: INV-${widget.tickectID}'),
-              pw.Text('Ticket ID: ${widget.tickectID}'),
-              pw.Text('Date: May 25, 2026'),
+                pw.SizedBox(height: 10),
+                pw.Text('Invoice No: INV-${widget.ticketId}'),
+                pw.Text('Ticket ID: ${widget.ticketId}'),
+                pw.Text('Date: May 25, 2026'),
 
-              pw.Divider(height: 30),
+                pw.Divider(height: 30),
 
-              pw.Text(
-                'Bill To:',
-                style: pw.TextStyle(  font: boldFont,),
-              ),
-              pw.Text('Grand Hyatt, Mumbai'),
-              pw.Text('Off Western Express Highway'),
+                pw.Text('Bill To:', style: pw.TextStyle(font: boldFont)),
+                pw.Text('Grand Hyatt, Mumbai'),
+                pw.Text('Off Western Express Highway'),
 
-              pw.SizedBox(height: 20),
+                pw.SizedBox(height: 20),
 
-              receiptRow('Service Inspection Fee', 'Rs. 500'),
-              receiptRow('Temperature Controller Replacement', 'Rs. 3200'),
-              receiptRow('Thermostat Calibration', 'Rs. 800'),
-              receiptRow('Parts & Materials', 'Rs. 1200'),
+                receiptRow('Service Inspection Fee', 'Rs. 500'),
+                receiptRow('Temperature Controller Replacement', 'Rs. 3200'),
+                receiptRow('Thermostat Calibration', 'Rs. 800'),
+                receiptRow('Parts & Materials', 'Rs. 1200'),
 
-              pw.Divider(height: 30),
+                pw.Divider(height: 30),
 
-              receiptRow('Subtotal', 'Rs. 5700'),
-              receiptRow('GST (18%)', 'Rs. 1026'),
+                receiptRow('Subtotal', 'Rs. 5700'),
+                receiptRow('GST (18%)', 'Rs. 1026'),
 
-              pw.SizedBox(height: 10),
+                pw.SizedBox(height: 10),
 
-              receiptRow(
-                'Total Amount',
-                'Rs. 6726',
-                isBold: true,
-              ),
+                receiptRow('Total Amount', 'Rs. 6726', isBold: true),
 
-              pw.SizedBox(height: 25),
+                pw.SizedBox(height: 25),
 
-              pw.Text(
-                'Payment Status: PAID',
-                style: pw.TextStyle(
-                   font: boldFont,
-                  color: PdfColors.green,
+                pw.Text(
+                  'Payment Status: PAID',
+                  style: pw.TextStyle(font: boldFont, color: PdfColors.green),
                 ),
-              ),
-              pw.Text('Transaction ID: TXN20260525143045'),
-              pw.Text('Payment Method: UPI - fieldstar@paytm'),
+                pw.Text('Transaction ID: TXN20260525143045'),
+                pw.Text('Payment Method: UPI - fieldstar@paytm'),
 
-              pw.SizedBox(height: 40),
+                pw.SizedBox(height: 40),
 
-              pw.Center(
-                child: pw.Text('Thank you for choosing Field Star Services'),
+                pw.Center(
+                  child: pw.Text('Thank you for choosing Field Star Services'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'Receipt_${widget.ticketId}.pdf',
+    );
+  }
+
+  pw.Widget receiptRow(String title, String amount, {bool isBold = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 10),
+      child: pw.Row(
+        children: [
+          pw.Expanded(
+            child: pw.Text(
+              title,
+              style: pw.TextStyle(
+                fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
               ),
-            ],
+            ),
           ),
-        );
-      },
-    ),
-  );
-
-  await Printing.sharePdf(
-    bytes: await pdf.save(),
-    filename: 'Receipt_${widget.tickectID}.pdf',
-  );
-}
-
-pw.Widget receiptRow(String title, String amount, {bool isBold = false}) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.only(bottom: 10),
-    child: pw.Row(
-      children: [
-        pw.Expanded(
-          child: pw.Text(
-            title,
+          pw.Text(
+            amount,
             style: pw.TextStyle(
               fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
             ),
           ),
-        ),
-        pw.Text(
-          amount,
-          style: pw.TextStyle(
-            fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }

@@ -1,16 +1,30 @@
+import 'package:field_star_customer_app/model/service_rating_model.dart';
+import 'package:field_star_customer_app/service/raise_complaint_db.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class RateServicePage extends StatefulWidget {
-  const RateServicePage({super.key});
+  final String ticketId;
+  final String technicianId;
+  final String technicianName;
+  final String equipment;
+  final String serviceDate;
+  const RateServicePage({super.key, 
+  required this.ticketId, 
+  required this.technicianId,
+   required this.technicianName,
+    required this.equipment,
+     required this.serviceDate});
 
   @override
   State<RateServicePage> createState() => _RateServicePageState();
 }
 
 class _RateServicePageState extends State<RateServicePage> {
-  int rating = 1;
-
+  int rating = 0;
+final _repo = RaiseComplaintDb();
+bool _isSubmitting = false;
+final TextEditingController _commentController=TextEditingController();
   final List<String> tags = [
     "Quick Response",
     "Professional",
@@ -220,7 +234,7 @@ class _RateServicePageState extends State<RateServicePage> {
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Column(
+                child:  Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -255,24 +269,57 @@ class _RateServicePageState extends State<RateServicePage> {
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(
-              flex: 2,
-              child: ElevatedButton(
-                onPressed: () => context.go('/finalpage'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                ),
-                child: const Text(
-                  "Submit Rating",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+           Expanded(
+  flex: 2,
+  child: ElevatedButton(
+    onPressed: _isSubmitting ? null : () async {
+      setState(() => _isSubmitting = true);
+
+      try {
+        await _repo.submitRating(
+          ServiceRatingModel(
+            ticketId:widget.ticketId,
+            technicianId: widget.technicianId,
+            technicianName: widget.technicianName,
+            equipment: widget.equipment,
+            serviceDate: widget.serviceDate,
+            rating: rating,
+            ratingLabel: _ratingLabel,
+            selectedTags: _selectedTags.map((i) => tags[i]).toList(),
+            comments: _commentController.text.trim(),
+          ),
+        );
+        context.go('/finalpage');
+      } catch (e) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit: $e')),
+        );
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.deepOrange,
+      elevation: 0,
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(7),
+      ),
+    ),
+    child: _isSubmitting
+        ? const SizedBox(
+            height: 18,
+            width: 18,
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
             ),
+          )
+        : const Text(
+            "Submit Rating",
+            style: TextStyle(color: Colors.white),
+          ),
+  ),
+),
           ],
         ),
       ),
@@ -292,7 +339,7 @@ class _SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         children: [
-          Expanded(
+          Flexible(          // ✅ Flexible instead of Expanded
             child: Text(
               label,
               style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
@@ -310,4 +357,5 @@ class _SummaryRow extends StatelessWidget {
       ),
     );
   }
+
 }

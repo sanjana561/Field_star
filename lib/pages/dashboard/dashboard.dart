@@ -89,32 +89,30 @@ class _DashboardState extends State<Dashboard> {
  //========================Raise Complaint button=============================
                         SizedBox(
                           width: 500,
-                          child: Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RaiseComplaintPage(
-                                      tickedID: widget.tickedID,
-                                      categoryName: widget.categoryName,
-                                      equipmentName: widget.equipmentName,
-                                      problemDescription:
-                                          widget.problemDescription,
-                                    ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RaiseComplaintPage(
+                                    tickedID: widget.tickedID,
+                                    categoryName: widget.categoryName,
+                                    equipmentName: widget.equipmentName,
+                                    problemDescription:
+                                        widget.problemDescription,
                                   ),
-                                );
-                              },
-                              style: btnStyle(Colors.deepOrange),
-                              child: Row(
-                                spacing: 15,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.add, color: Colors.white70),
-                                  const Text('Raise New Compaint'),
-                                ],
-                              ),
+                                ),
+                              );
+                            },
+                            style: btnStyle(Colors.deepOrange),
+                            child: Row(
+                              spacing: 15,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add, color: Colors.white70),
+                                const Text('Raise New Compaint'),
+                              ],
                             ),
                           ),
                         ),

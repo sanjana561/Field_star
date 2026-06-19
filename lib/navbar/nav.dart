@@ -10,7 +10,7 @@ import 'package:field_star_customer_app/pages/jobdetails/jobdetails.dart';
 import 'package:field_star_customer_app/pages/rating/rating.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path/path.dart';
+// ✅ removed unused: import 'package:path/path.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -42,6 +42,7 @@ final GoRouter appRouter = GoRouter(
 
     final isLoginPage = state.matchedLocation == '/login';
     final isLandingPage = state.matchedLocation == '/';
+
     if (isLoggedIn && (isLoginPage || isLandingPage)) {
       return '/Home';
     }
@@ -65,7 +66,6 @@ final GoRouter appRouter = GoRouter(
           path: '/Home',
           builder: (context, state) {
             final ticketId = state.extra as String? ?? '';
-
             final categoryName = state.extra as String? ?? '';
             final equipmentName = state.extra as String? ?? '';
             final problemDescription = state.extra as String? ?? '';
@@ -78,18 +78,18 @@ final GoRouter appRouter = GoRouter(
             );
           },
         ),
+
         GoRoute(
           path: '/jobdescription',
           builder: (context, state) {
-            final ticketId = state.extra as String;
-
+            final ticketId = state.extra as String? ?? ''; // ✅ null-safe
             return Jobdetails(ticketId: ticketId);
           },
         ),
+
         GoRoute(
           path: '/servicecompleted',
           builder: (context, state) {
-            // ✅ Safe cast with null check
             final extra = state.extra as Map<String, dynamic>?;
             return Servicecompleted(
               ticketId: extra?['tickectid'] as String? ?? 'N/A',
@@ -97,20 +97,44 @@ final GoRouter appRouter = GoRouter(
             );
           },
         ),
-        
-       GoRoute(
-  path: '/payment',
-  builder: (context, state) {
-    final ticketId = state.extra as String? ?? '';
 
-    return InvoicePaymentPage(tickectID: ticketId);
-  },
-),
-        
-        GoRoute(path: '/rating', builder: (_, _) => const RateServicePage()),
-        GoRoute(path: '/finalpage', builder: (_, _) => const ThankYouPage()),
+        GoRoute(
+          path: '/payment',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            return InvoicePaymentPage(
+              ticketId: extra['ticketId'] ?? '',
+              technicianId: extra['technicianId'] ?? '',
+              technicianName: extra['technicianName'] ?? '',
+              equipment: extra['equipment'] ?? '',
+              serviceDate: extra['serviceDate'] ?? '',
+            );
+          },
+        ),
 
-        GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+        GoRoute(
+          path: '/rating',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {}; // ✅ null-safe
+            return RateServicePage(
+              ticketId: extra['ticketId'] ?? '',
+              technicianId: extra['technicianId'] ?? '',
+              technicianName: extra['technicianName'] ?? '',
+              equipment: extra['equipment'] ?? '',
+              serviceDate: extra['serviceDate'] ?? '',
+            );
+          },
+        ),
+
+        GoRoute(
+          path: '/finalpage',
+          builder: (_, __) => const ThankYouPage(), // ✅ fixed: __ for second param
+        ),
+
+        GoRoute(
+          path: '/login',
+          builder: (_, __) => const LoginScreen(), // ✅ fixed: __ for second param
+        ),
       ],
     ),
   ],

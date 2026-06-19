@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:field_star_customer_app/model/raise_complaint_model.dart';
+import 'package:field_star_customer_app/model/service_rating_model.dart';
 import 'package:field_star_customer_app/model/tech_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -132,5 +133,24 @@ Future<TechModel?> fetchTechDetails(String ticketId) async {
 
   return TechModel.fromMap(technicianResponse);
 }
+
+//============================Insert rating=====================================
+ Future<void> submitRating(ServiceRatingModel model) async {
+    await _supabase
+        .from('service_ratings')
+        .insert(model.toJson());
+  }
+
+  // =============================Fetch rating by ticket ID ========================================
+  Future<ServiceRatingModel?> fetchRatingByTicketId(String ticketId) async {
+    final response = await _supabase
+        .from('service_ratings')
+        .select()
+        .eq('ticket_id', ticketId)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return ServiceRatingModel.fromJson(response);
+  }
 
   }

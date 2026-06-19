@@ -12,8 +12,6 @@ class RaiseComplaintModel {
   final String? complaintStatus;
   final String? technicianName;
   final String? customerId;
-
-  // ← ADD customer detail fields
   final String? customerName;
   final String? customerPhone;
   final String? customerLocation;
@@ -34,7 +32,6 @@ class RaiseComplaintModel {
     this.complaintStatus,
     this.technicianName,
     this.customerId,
-    // ← ADD
     this.customerName,
     this.customerPhone,
     this.customerLocation,

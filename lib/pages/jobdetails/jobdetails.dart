@@ -2,12 +2,15 @@ import 'package:field_star_customer_app/model/raise_complaint_model.dart';
 import 'package:field_star_customer_app/model/tech_model.dart';
 import 'package:field_star_customer_app/model/timeline.dart';
 import 'package:field_star_customer_app/service/raise_complaint_db.dart';
+import 'package:field_star_customer_app/share.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timelines_plus/timelines_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Jobdetails extends StatefulWidget {
   final String ticketId;
+
   const Jobdetails({super.key, required this.ticketId});
 
   @override
@@ -15,6 +18,9 @@ class Jobdetails extends StatefulWidget {
 }
 
 class _JobdetailsState extends State<Jobdetails> {
+  TechModel? _techDetails;
+  RaiseComplaintModel? _complaint;
+
   final repo = RaiseComplaintDb();
 
   @override
@@ -152,9 +158,8 @@ class _JobdetailsState extends State<Jobdetails> {
                                 spacing: 15,
                                 children: [
                                   ElevatedButton(
-                                    onPressed: () {
-
-                                    },
+                                    onPressed: () =>
+                                        _makeCall(techDetails.phone),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.deepOrange
                                           .withOpacity(0.5),
@@ -173,9 +178,8 @@ class _JobdetailsState extends State<Jobdetails> {
                                     ),
                                   ),
                                   ElevatedButton(
-                                    onPressed: () {
-
-                                    },
+                                    onPressed: () =>
+                                        _sendSms(techDetails.phone),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.deepOrange
                                           .withOpacity(0.5),
@@ -340,120 +344,31 @@ class _JobdetailsState extends State<Jobdetails> {
                   },
                 ),
 
-                //======================Activity Item==========================
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Recent Activity",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Activity 1
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 5),
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.orange,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  "Technician has accepted the service request",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  "10:22 AM",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      //==================== Activity =============================
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 5),
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  "Complaint registered successfully",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  "10:15 AM",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 20),
                 SizedBox(
-                  width: double.infinity,
+                     width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      context.go('/payment'
-                      ,extra: widget.ticketId);
+                      if (_techDetails == null || _complaint == null) return;
+                      context.go(
+                        '/payment',
+                        extra: {
+                          'ticketId': widget.ticketId,
+                          'technicianId': _techDetails!.techId,
+                          'technicianName': _techDetails!.fullName,
+                          'equipment': _complaint!.serviceRequired,
+                          'serviceDate': _complaint!.date?.toString() ?? '',
+                        },
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2C313A),
                       elevation: 0,
+                      minimumSize: const Size(
+                        double.infinity,
+                        50,
+                      ), 
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -511,5 +426,28 @@ class _JobdetailsState extends State<Jobdetails> {
         completed: status == "Completed",
       ),
     ];
+  }
+
+  //==============================Make a call======================================
+  Future<void> _makeCall(String phone) async {
+    final Uri uri = Uri(scheme: 'tel', path: phone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open dialer')));
+    }
+  }
+
+  Future<void> _sendSms(String phone) async {
+    final Uri uri = Uri(scheme: 'sms', path: phone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open SMS app')));
+    }
   }
 }
