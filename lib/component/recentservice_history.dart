@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class RecentServiceHistoryCard extends StatelessWidget {
   final String equipmentName;
   final String ticketId;
-  final String serviceDate;
+
   final String status;
   final VoidCallback? onTap;
 
@@ -11,7 +11,7 @@ class RecentServiceHistoryCard extends StatelessWidget {
     super.key,
     required this.equipmentName,
     required this.ticketId,
-    required this.serviceDate,
+
     this.status = "Completed",
     this.onTap,
   });
@@ -45,13 +45,7 @@ class RecentServiceHistoryCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '$ticketId • $serviceDate',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
+                 
                 ],
               ),
             ),

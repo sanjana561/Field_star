@@ -8,29 +8,33 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ScheduleServicePage extends StatefulWidget {
-final String tickedID;
-  final String categoryName; 
-  final String equipmentName;  
-  final String problemDescription; 
-    final File? imageFile;     
-  final String? audioPath;   
-  
-  const ScheduleServicePage({super.key, 
-  required this.tickedID, 
-  required this.categoryName, 
-  required this.equipmentName, 
-  required this.problemDescription,
-   this.imageFile, 
-   this.audioPath,
-   });
+  final String tickedID;
+  final String categoryName;
+  final String equipmentName;
+  final String problemDescription;
+  final File? imageFile;
+  final String? audioPath;
+  final String? priorityStatus;
+
+  const ScheduleServicePage({
+    super.key,
+    required this.tickedID,
+    required this.categoryName,
+    required this.equipmentName,
+    required this.problemDescription,
+    this.imageFile,
+    this.audioPath,
+    this.priorityStatus,
+  });
 
   @override
   State<ScheduleServicePage> createState() => _ScheduleServicePageState();
 }
 
 class _ScheduleServicePageState extends State<ScheduleServicePage> {
+  DateTime? selectedDate;
   String serviceType = 'Emergency';
-  //Generating tickect number
+
   String generateTicketId() {
     final random = Random();
     return 'FS${100000 + random.nextInt(900000)}';
@@ -40,53 +44,55 @@ class _ScheduleServicePageState extends State<ScheduleServicePage> {
     final random = Random();
     return (1000 + random.nextInt(9000)).toString();
   }
-Future<void> _onSubmitComplaint() async {
-  final ticketId = generateTicketId(); 
-  final otp = generateOtp();           
 
-  final repo = RaiseComplaintDb();
+  Future<void> _onSubmitComplaint() async {
+    final ticketId = generateTicketId();
+    final otp = generateOtp();
 
-  try {
-    // ✅ Upload image if exists
-    String? imageUrl;
-    String? audioUrl;
+    final repo = RaiseComplaintDb();
 
-    if (widget.imageFile != null) {
-      imageUrl = await repo.uploadImage(widget.imageFile!);
-    }
+    try {
+      // ✅ Upload image if exists
+      String? imageUrl;
+      String? audioUrl;
 
-    if (widget.audioPath != null) {
-      audioUrl = await repo.uploadAudio(widget.audioPath!);
-    }
+      if (widget.imageFile != null) {
+        imageUrl = await repo.uploadImage(widget.imageFile!);
+      }
 
-    final finalComplaint = RaiseComplaintModel(
-      categoryName: widget.categoryName,
-      serviceRequired: widget.equipmentName,
-      problem: widget.problemDescription,
-      priorityLevel: 'Medium',
-      date: DateTime.now(),
-      tickectid: ticketId,  // ✅ use generated ticketId
-      otp: otp,             // ✅ use generated otp, not widget.otp
-      imageUrl: imageUrl,   // ✅ nullable, no crash
-      audioUrl: audioUrl,   // ✅ nullable, no crash
-    );
+      if (widget.audioPath != null) {
+        audioUrl = await repo.uploadAudio(widget.audioPath!);
+      }
 
-    await repo.submitFullComplaint(finalComplaint);
-
-    if (mounted) {
-      context.push('/servicecompleted', extra: {
-        'tickectid': ticketId,
-        'otp': otp,
-      });
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Submission failed: $e')),
+      final finalComplaint = RaiseComplaintModel(
+        categoryName: widget.categoryName,
+        serviceRequired: widget.equipmentName,
+        problem: widget.problemDescription,
+        priorityLevel: widget.priorityStatus,
+        date: DateTime.now(),
+        tickectid: ticketId,
+        otp: otp,
+        imageUrl: imageUrl,
+        audioUrl: audioUrl,
       );
+
+      await repo.submitFullComplaint(finalComplaint);
+
+      if (mounted) {
+        context.push(
+          '/servicecompleted',
+          extra: {'tickectid': ticketId, 'otp': otp},
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Submission failed: $e')));
+      }
     }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,9 +158,12 @@ Future<void> _onSubmitComplaint() async {
                   serviceCard(
                     type: 'Later',
                     title: 'Schedule for Later',
-                    subtitle: 'Choose preferred date & time',
+                    subtitle: selectedDate != null
+                        ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
+                        : 'Choose preferred date & time',
                     icon: Icons.calendar_month,
                     color: Colors.blueGrey,
+                    onTap: _selectDate, 
                   ),
 
                   const SizedBox(height: 40),
@@ -165,16 +174,19 @@ Future<void> _onSubmitComplaint() async {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Column(
+                    child:  Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Summary',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                         SizedBox(height: 14),
-                        summaryRow('Equipment:', 'Conveyor Dishwasher'),
-                        summaryRow('Priority:', 'Medium'),
+                        summaryRow('Equipment:', widget.equipmentName),
+                        summaryRow('Priority:', widget.priorityStatus ?? '-'),
                         summaryRow('Service Type:', 'Emergency'),
                       ],
                     ),
@@ -219,17 +231,35 @@ Future<void> _onSubmitComplaint() async {
     );
   }
 
+  //====================Helper function date picker===================
+  Future<void> _selectDate() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2021, 7, 25),
+      firstDate: DateTime(2021),
+      lastDate: DateTime(2022),
+    );
+
+    setState(() {
+      selectedDate = pickedDate;
+    });
+  }
+
   Widget serviceCard({
     required String type,
     required String title,
     required String subtitle,
     required IconData icon,
     required Color color,
+    VoidCallback? onTap,
   }) {
     final selected = serviceType == type;
 
     return InkWell(
-      onTap: () => setState(() => serviceType = type),
+      onTap: () {
+        setState(() => serviceType = type);
+        onTap?.call(); // ✅ call if provided
+      },
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(

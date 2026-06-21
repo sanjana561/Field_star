@@ -1,10 +1,11 @@
 import 'package:field_star_customer_app/model/tech_model.dart';
-import 'package:field_star_customer_app/service/raise_complaint_db.dart';
+import 'package:field_star_customer_app/service/techdetais_db.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class InvoicePaymentPage extends StatefulWidget {
   final String ticketId;
@@ -70,49 +71,53 @@ class InvoicePaymentPage extends StatefulWidget {
     required String title,
     required String subtitle,
     required bool isSelected,
+    required VoidCallback onclick,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isSelected ? Colors.deepOrange : const Color(0xFFE5E7EB),
+    return InkWell(
+      onTap: onclick,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.deepOrange : const Color(0xFFE5E7EB),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: const Color(0xFFF3F4F6),
-            child: Icon(icon, color: Colors.black87, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFFF3F4F6),
+              child: Icon(icon, color: Colors.black87, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
-  final repo = RaiseComplaintDb();
+  final repo = TechdetaisDb();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,6 +137,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+//==================Fetch tickectID=============================
             FutureBuilder<TechModel?>(
               future: repo.fetchTechDetails(widget.ticketId),
               builder: (context, snapshot) {
@@ -152,6 +158,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
             ),
           ],
         ),
+//==========================Download recipt option=======================
         actions: [
           CircleAvatar(
             backgroundColor: const Color(0xFFF3F4F6),
@@ -168,7 +175,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            // Invoice Card
+//====================== Invoice Card=========================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -269,7 +276,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
 
             const SizedBox(height: 14),
 
-            // Payment Success
+ //===================== Payment Success==========================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -372,8 +379,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
             ),
 
             const SizedBox(height: 14),
-
-            // Other Payment Methods
+//================== Other Payment Methods==================================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -392,6 +398,9 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                     title: "Scan QR Code",
                     subtitle: "Pay using any UPI app",
                     isSelected: true,
+                    onclick: (){
+                     _showQrBottomSheet(context);
+                    }
                   ),
 
                   const SizedBox(height: 12),
@@ -401,6 +410,9 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                     title: "Cash Payment",
                     subtitle: "Pay to technician directly",
                     isSelected: false,
+                     onclick: (){
+                        _showQrBottomSheet(context);
+                    }
                   ),
                 ],
               ),
@@ -410,7 +422,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
           ],
         ),
       ),
-
+//========================Rate service Button==========================
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(14),
         color: Colors.white,
@@ -430,7 +442,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
             ),
             const SizedBox(width: 10),
             SizedBox(
-              width: 50,
+              width: 200,
               child: ElevatedButton(
                 onPressed: () {
                   context.go(
@@ -461,7 +473,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
     );
   }
 
-  //==============Download Button=====================================
+  //==============Download PDF Button=====================================
   Future<void> downloadReceipt() async {
     final font = await PdfGoogleFonts.notoSansRegular();
     final boldFont = await PdfGoogleFonts.notoSansBold();
@@ -571,4 +583,60 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
       ),
     );
   }
+
+  //============================Qr Code For Payment============================
+  void _showQrBottomSheet(BuildContext context) {
+  // UPI payment string — replace with your actual UPI ID and amount
+  final upiString =
+      'upi://pay?pa=fieldstar@paytm&pn=Field Star Services&am=6726&cu=INR&tn=Invoice ${widget.ticketId}';
+
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+    ),
+    builder: (_) => Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Scan to Pay',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Use any UPI app to scan and pay',
+            style: TextStyle(color: Colors.blueGrey, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          QrImageView(
+            data: upiString,
+            version: QrVersions.auto,
+            size: 220,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'fieldstar@paytm',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const Text(
+            'Amount: Rs. 6726',
+            style: TextStyle(color: Colors.blueGrey, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    ),
+  );
+}
 }

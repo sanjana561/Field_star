@@ -82,7 +82,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/jobdescription',
           builder: (context, state) {
-            final ticketId = state.extra as String? ?? ''; // ✅ null-safe
+            final ticketId = state.extra as String? ?? ''; 
             return Jobdetails(ticketId: ticketId);
           },
         ),

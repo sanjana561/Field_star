@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:field_star_customer_app/model/raise_complaint_model.dart';
 import 'package:field_star_customer_app/model/service_rating_model.dart';
 import 'package:field_star_customer_app/model/tech_model.dart';
@@ -35,7 +34,7 @@ Future<void> submitFullComplaint(RaiseComplaintModel model) async {
   //============================fetch complaint============================================
  Future<List<RaiseComplaintModel>> Fetchcomplaints() async {
   try {
-    final user = _supabase.auth.currentUser; // ← get logged-in user
+    final user = _supabase.auth.currentUser;
 
     if (user == null) throw Exception('User not logged in');
 
@@ -51,8 +50,23 @@ Future<void> submitFullComplaint(RaiseComplaintModel model) async {
   } catch (e) {
     throw Exception('Failed to fetch: $e');
   }
+
+  
 }
 
+Future<List<RaiseComplaintModel>> fetchCompletedComplaints() async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+  
+  final response = await Supabase.instance.client
+      .from('Raise_complaint')
+      .select()
+      .eq('customer_id', userId!)
+      .eq('complaint_status', 'Completed');
+
+  return (response as List)
+      .map((e) => RaiseComplaintModel.fromMap(e))
+      .toList();
+}
 
 //==================Upload Images===================================
     Future<String?> uploadImage(File imageFile) async {
@@ -106,40 +120,6 @@ Future<void> submitFullComplaint(RaiseComplaintModel model) async {
 
   return RaiseComplaintModel.fromMap(response);
 }
-//===============================Fetch Techname============================
-
-
-Future<TechModel?> fetchTechDetails(String ticketId) async {
-  final complaintResponse = await _supabase
-      .from('Raise_complaint')
-      .select('technician_id')
-      .eq('tickectid', ticketId)
-      .maybeSingle();
-
-  if (complaintResponse == null ||
-      complaintResponse['technician_id'] == null) {
-    return null;
-  }
-
-  final technicianId = complaintResponse['technician_id'];
-
-  final technicianResponse = await _supabase
-      .from('technician')
-      .select()
-      .eq('id', technicianId)
-      .maybeSingle();
-
-  if (technicianResponse == null) return null;
-
-  return TechModel.fromMap(technicianResponse);
-}
-
-//============================Insert rating=====================================
- Future<void> submitRating(ServiceRatingModel model) async {
-    await _supabase
-        .from('service_ratings')
-        .insert(model.toJson());
-  }
 
   // =============================Fetch rating by ticket ID ========================================
   Future<ServiceRatingModel?> fetchRatingByTicketId(String ticketId) async {
@@ -152,5 +132,16 @@ Future<TechModel?> fetchTechDetails(String ticketId) async {
     if (response == null) return null;
     return ServiceRatingModel.fromJson(response);
   }
+
+  //======================Save Rating==========================
+  Future<void> submitRating(ServiceRatingModel model) async {
+  await Supabase.instance.client
+      .from('service_ratings')
+      .insert(model.toMap());
+ await Supabase.instance.client
+      .from('Raise_complaint') 
+      .update({'complaint_status': 'Completed'})
+      .eq('tickectid', model.ticketId);
+}
 
   }

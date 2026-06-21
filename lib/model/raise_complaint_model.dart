@@ -51,7 +51,7 @@ class RaiseComplaintModel {
       otp: map['otp'] ?? '',
       imageUrl: map['image_url'],
       audioUrl: map['audio_url'],
-      complaintStatus: map['tech_status'],
+      complaintStatus: map['complaint_status'],
       technicianName: map['technician_name'],
       customerId: map['customer_id'],
     );

@@ -9,12 +9,14 @@ class RateServicePage extends StatefulWidget {
   final String technicianName;
   final String equipment;
   final String serviceDate;
-  const RateServicePage({super.key, 
-  required this.ticketId, 
-  required this.technicianId,
-   required this.technicianName,
+  const RateServicePage({
+    super.key,
+    required this.ticketId,
+    required this.technicianId,
+    required this.technicianName,
     required this.equipment,
-     required this.serviceDate});
+    required this.serviceDate,
+  });
 
   @override
   State<RateServicePage> createState() => _RateServicePageState();
@@ -22,9 +24,9 @@ class RateServicePage extends StatefulWidget {
 
 class _RateServicePageState extends State<RateServicePage> {
   int rating = 0;
-final _repo = RaiseComplaintDb();
-bool _isSubmitting = false;
-final TextEditingController _commentController=TextEditingController();
+  final _repo = RaiseComplaintDb();
+  bool _isSubmitting = false;
+  final TextEditingController _commentController = TextEditingController();
   final List<String> tags = [
     "Quick Response",
     "Professional",
@@ -37,29 +39,45 @@ final TextEditingController _commentController=TextEditingController();
   ];
 
   final List<int> _selectedTags = [];
-
+//======================Rating label===============================
   String get _ratingLabel {
     switch (rating) {
-      case 1: return 'Poor';
-      case 2: return 'Fair';
-      case 3: return 'Good';
-      case 4: return 'Great';
-      case 5: return 'Excellent';
-      default: return '';
+      case 1:
+        return 'Poor';
+      case 2:
+        return 'Fair';
+      case 3:
+        return 'Good';
+      case 4:
+        return 'Great';
+      case 5:
+        return 'Excellent';
+      default:
+        return '';
     }
   }
-
+//=======================diffrent rating label color==========================
   Color get _ratingColor {
     switch (rating) {
-      case 1: return const Color(0xFFEF4444);
-      case 2: return const Color(0xFFF97316);
-      case 3: return const Color(0xFFF59E0B);
-      case 4: return const Color(0xFF22C55E);
-      case 5: return const Color(0xFF10B981);
-      default: return Colors.blueGrey;
+      case 1:
+        return const Color(0xFFEF4444);
+      case 2:
+        return const Color(0xFFF97316);
+      case 3:
+        return const Color(0xFFF59E0B);
+      case 4:
+        return const Color(0xFF22C55E);
+      case 5:
+        return const Color(0xFF10B981);
+      default:
+        return Colors.blueGrey;
     }
   }
-
+@override
+void dispose() {
+  _commentController.dispose();
+  super.dispose();
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,8 +129,12 @@ final TextEditingController _commentController=TextEditingController();
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Icon(
-                        selected ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: selected ? Colors.deepOrange : const Color(0xFFD1D5DB),
+                        selected
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        color: selected
+                            ? Colors.deepOrange
+                            : const Color(0xFFD1D5DB),
                         size: 40,
                       ),
                     ),
@@ -169,9 +191,13 @@ final TextEditingController _commentController=TextEditingController();
                           vertical: 9,
                         ),
                         decoration: BoxDecoration(
-                          color: picked ? const Color(0xFFFFF1E6) : Colors.white,
+                          color: picked
+                              ? const Color(0xFFFFF1E6)
+                              : Colors.white,
                           border: Border.all(
-                            color: picked ? Colors.deepOrange : const Color(0xFFE5E7EB),
+                            color: picked
+                                ? Colors.deepOrange
+                                : const Color(0xFFE5E7EB),
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -179,7 +205,9 @@ final TextEditingController _commentController=TextEditingController();
                           tags[i],
                           style: TextStyle(
                             fontSize: 12,
-                            color: picked ? Colors.deepOrange : const Color(0xFF475569),
+                            color: picked
+                                ? Colors.deepOrange
+                                : const Color(0xFF475569),
                           ),
                         ),
                       ),
@@ -189,7 +217,7 @@ final TextEditingController _commentController=TextEditingController();
               ),
 
               const SizedBox(height: 28),
-
+//==================comment tectbox===============================
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -202,6 +230,7 @@ final TextEditingController _commentController=TextEditingController();
 
               TextField(
                 maxLines: 5,
+                controller: _commentController,
                 decoration: InputDecoration(
                   hintText: "Share more details about your experience...",
                   hintStyle: const TextStyle(
@@ -226,7 +255,7 @@ final TextEditingController _commentController=TextEditingController();
               ),
 
               const SizedBox(height: 30),
-
+//=====================Service Summary============================
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
@@ -234,18 +263,24 @@ final TextEditingController _commentController=TextEditingController();
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child:  Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Service Summary",
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 14),
-                    _SummaryRow(label: "Ticket ID:", value: "TCK-2451"),
-                    _SummaryRow(label: "Equipment:", value: "Commercial Deep Fryer"),
-                    _SummaryRow(label: "Technician:", value: "Rajesh Kumar"),
-                    _SummaryRow(label: "Service Date:", value: "May 25, 2026"),
+                    _SummaryRow(label: "Ticket ID:", value: widget.ticketId),
+                    _SummaryRow(label: "Equipment:", value: widget.equipment),
+                    _SummaryRow(
+                      label: "Technician:",
+                      value: widget.technicianName,
+                    ),
+                    // _SummaryRow(label: "Service Date:", value: widget.serviceDate),
                   ],
                 ),
               ),
@@ -265,68 +300,77 @@ final TextEditingController _commentController=TextEditingController();
             Expanded(
               child: TextButton(
                 onPressed: () => context.go('/finalpage'),
-                child: const Text("Skip", style: TextStyle(color: Colors.blueGrey)),
+                child: const Text(
+                  "Skip",
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
               ),
             ),
             const SizedBox(width: 10),
-           Expanded(
-  flex: 2,
-  child: ElevatedButton(
-    onPressed: _isSubmitting ? null : () async {
-      setState(() => _isSubmitting = true);
+//==========================Save rating button=========================
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: _isSubmitting
+                    ? null
+                    : () async {
+                        setState(() => _isSubmitting = true);
 
-      try {
-        await _repo.submitRating(
-          ServiceRatingModel(
-            ticketId:widget.ticketId,
-            technicianId: widget.technicianId,
-            technicianName: widget.technicianName,
-            equipment: widget.equipment,
-            serviceDate: widget.serviceDate,
-            rating: rating,
-            ratingLabel: _ratingLabel,
-            selectedTags: _selectedTags.map((i) => tags[i]).toList(),
-            comments: _commentController.text.trim(),
-          ),
-        );
-        context.go('/finalpage');
-      } catch (e) {
-        setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit: $e')),
-        );
-      }
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.deepOrange,
-      elevation: 0,
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(7),
-      ),
-    ),
-    child: _isSubmitting
-        ? const SizedBox(
-            height: 18,
-            width: 18,
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
+                        try {
+                          await _repo.submitRating(
+                            ServiceRatingModel(
+                              ticketId: widget.ticketId,
+                              technicianId: widget.technicianId,
+                              technicianName: widget.technicianName,
+                              equipment: widget.equipment,
+                              serviceDate: widget.serviceDate,
+                              rating: rating,
+                              ratingLabel: _ratingLabel,
+                              selectedTags: _selectedTags
+                                  .map((i) => tags[i])
+                                  .toList(),
+                              comments: _commentController.text.trim(),
+                              status: 'Completed'
+                            ),
+                          );
+                          context.go('/finalpage');
+                        } catch (e) {
+                          setState(() => _isSubmitting = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to submit: $e')),
+                          );
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Submit Rating",
+                        style: TextStyle(color: Colors.white),
+                      ),
+              ),
             ),
-          )
-        : const Text(
-            "Submit Rating",
-            style: TextStyle(color: Colors.white),
-          ),
-  ),
-),
           ],
         ),
       ),
     );
   }
 }
-
+//============================helper function=============================
 class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
@@ -339,7 +383,8 @@ class _SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         children: [
-          Flexible(          // ✅ Flexible instead of Expanded
+          Flexible(
+            // ✅ Flexible instead of Expanded
             child: Text(
               label,
               style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
@@ -357,5 +402,4 @@ class _SummaryRow extends StatelessWidget {
       ),
     );
   }
-
 }

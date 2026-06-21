@@ -26,6 +26,7 @@ class DescribeProblemPage extends StatefulWidget {
 }
 
 class _DescribeProblemPageState extends State<DescribeProblemPage> {
+
   final AudioRecorder audioRecorder = AudioRecorder();
   bool isrecoding = false;
   bool playing = false;
@@ -34,6 +35,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
   final problemCtrl = TextEditingController();
   String priority = 'Medium';
   File? _imageFile;
+
   @override
   void dispose() {
     problemCtrl.dispose();
@@ -46,7 +48,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xffF8FAFC),
-      //===========Appbar==============================
+ //===========Appbar==============================
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: .5,
@@ -99,7 +101,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
 
               const Text('Problem Description', style: TextStyle(fontSize: 12)),
               const SizedBox(height: 8),
-
+//==========================Problem description textbox=====================
               TextField(
                 controller: problemCtrl,
                 maxLines: 5,
@@ -114,7 +116,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
               ),
 
               const SizedBox(height: 16),
-
+//===================voice and photo button=======================
               Row(
                 children: [
                   Expanded(
@@ -166,7 +168,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
                   ),
                 ],
               ),
-
+//============================Priority level======================================
               const Text('Priority Level', style: TextStyle(fontSize: 12)),
               const SizedBox(height: 8),
 
@@ -217,6 +219,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
                       child: const Text('Back'),
                     ),
                   ),
+//=====================continue button=====================================
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
@@ -230,6 +233,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
                                     categoryName: widget.categoryName,
                                     equipmentName: widget.equipmentName,
                                     problemDescription: problemCtrl.text.trim(),
+                                    priorityStatus: priority,
                                   ),
                                 ),
                               );

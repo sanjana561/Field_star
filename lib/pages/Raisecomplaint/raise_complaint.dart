@@ -85,7 +85,7 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
               style: TextStyle(fontSize: 12, color: Colors.blueGrey),
             ),
             const SizedBox(height: 22),
-
+//=================category gridview=============================
             GridView.builder(
               shrinkWrap: true,
               itemCount: categories.length,
@@ -133,7 +133,7 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
             ),
 
             const Spacer(),
-
+//====================continue button====================================
             SizedBox(
               width: double.infinity,
               height: 34,

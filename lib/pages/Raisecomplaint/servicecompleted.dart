@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:field_star_customer_app/pages/dashboard/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -108,8 +105,7 @@ class Servicecompleted extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10.0),
-
-                        // Ticket ID and Copy Icon
+//============================== Ticket ID and Copy Icon=========================
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -171,7 +167,7 @@ class Servicecompleted extends StatelessWidget {
                 width: 500,
                 child: ElevatedButton(
                   onPressed: () {
-                context.go('/Home');
+                context.go('/Home',);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 253, 135, 25), // Very dark navy-charcoal button

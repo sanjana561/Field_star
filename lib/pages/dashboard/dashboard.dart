@@ -25,7 +25,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  final repo= RaiseComplaintDb();
+  final repo = RaiseComplaintDb();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +35,7 @@ class _DashboardState extends State<Dashboard> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //======================Heading===========================================
+//======================Heading===========================================
             const Text(
               'Dashboard',
               style: TextStyle(
@@ -47,10 +47,10 @@ class _DashboardState extends State<Dashboard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
-              //=========================UserName=======================================
+//=========================UserName=======================================
               children: [
                 Text(
-                  'Grand Hyatt, Mumbai',
+                  'Welcome to the dashboard',
                   style: TextStyle(color: Colors.black87, fontSize: 12),
                 ),
                 Container(
@@ -86,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
- //========================Raise Complaint button=============================
+                        //========================Raise Complaint button=============================
                         SizedBox(
                           width: 500,
                           child: ElevatedButton(
@@ -133,9 +133,9 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
               FutureBuilder<List<RaiseComplaintModel>>(
-                future:repo.Fetchcomplaints(),
-                builder:(context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                future: repo.Fetchcomplaints(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
@@ -158,7 +158,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     );
                   }
-                   final complaints = snapshot.data!;
+                  final complaints = snapshot.data!;
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -170,51 +170,15 @@ class _DashboardState extends State<Dashboard> {
                         status: c.priorityLevel ?? 'Pending',
                         equipment: c.serviceRequired ?? '',
                         issue: c.problem ?? '',
-                        technician: c.technicianName ?? '',                    
-                        onTap: () => context.go('/jobdescription',
-                        extra: c.tickectid),
+                        technician: c.technicianName ?? '',
+                        onTap: () =>
+                            context.go('/jobdescription', extra: c.tickectid),
                       );
                     },
-
-              );
-             
+                  );
                 },
               ),
-                
-              SizedBox(height: 15),
-              Text(
-                'Your Equipment',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              //============================Equipment card==============================
-              Row(
-                children: [
-                  Expanded(
-                    child: EquipmentCard(
-                      title: 'Commercial Deep Fryer',
-                      model: 'Pitco SE14',
-                      location: 'Main Kitchen',
-                      lastService: '2026-04-10',
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: EquipmentCard(
-                      title: 'Commercial Deep Fryer',
-                      model: 'Pitco SE14',
-                      location: 'Main Kitchen',
-                      lastService: '2026-04-10',
-                    ),
-                  ),
-                ],
-              ),
+
               //========================Recent service==============================
               const SizedBox(height: 15),
               Row(
@@ -227,19 +191,28 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
-              Column(
-                children: [
-                  RecentServiceHistoryCard(
-                    equipmentName: "Conveyor Dishwasher",
-                    ticketId: "TCK-2442",
-                    serviceDate: "2026-05-20",
-                  ),
-                  RecentServiceHistoryCard(
-                    equipmentName: "Industrial Oven",
-                    ticketId: "TCK-2435",
-                    serviceDate: "2026-05-15",
-                  ),
-                ],
+              FutureBuilder<List<RaiseComplaintModel>>(
+                future: repo.fetchCompletedComplaints(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No completed services'));
+                  }
+
+                  final completed = snapshot.data!;
+
+                  return Column(
+                    children: completed.map((complaint) {
+                      return RecentServiceHistoryCard(
+                        equipmentName: complaint.serviceRequired ?? '',
+                        ticketId: complaint.tickectid ?? '',
+                      );
+                    }).toList(),
+                  );
+                },
               ),
             ],
           ),
@@ -247,7 +220,7 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
-
+//================Button Style=============================
   ButtonStyle btnStyle(Color color) => ElevatedButton.styleFrom(
     backgroundColor: color,
     foregroundColor: Colors.white,
@@ -255,4 +228,3 @@ class _DashboardState extends State<Dashboard> {
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
   );
 }
-

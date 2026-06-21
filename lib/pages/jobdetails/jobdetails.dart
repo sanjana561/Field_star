@@ -2,6 +2,7 @@ import 'package:field_star_customer_app/model/raise_complaint_model.dart';
 import 'package:field_star_customer_app/model/tech_model.dart';
 import 'package:field_star_customer_app/model/timeline.dart';
 import 'package:field_star_customer_app/service/raise_complaint_db.dart';
+import 'package:field_star_customer_app/service/techdetais_db.dart';
 import 'package:field_star_customer_app/share.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,8 +21,23 @@ class Jobdetails extends StatefulWidget {
 class _JobdetailsState extends State<Jobdetails> {
   TechModel? _techDetails;
   RaiseComplaintModel? _complaint;
-
   final repo = RaiseComplaintDb();
+  final techdb = TechdetaisDb();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final tech = await techdb.fetchTechDetails(widget.ticketId);
+    final complaint = await repo.fetchComplaintByTicketId(widget.ticketId);
+    setState(() {
+      _techDetails = tech;
+      _complaint = complaint;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,49 +59,78 @@ class _JobdetailsState extends State<Jobdetails> {
               'Track Complaint',
               style: TextStyle(color: Colors.black, fontSize: 18),
             ),
-            FutureBuilder<TechModel?>(
-              future: repo.fetchTechDetails(widget.ticketId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+//===================Fetch techid and complaint status==================
+           FutureBuilder<List<dynamic>>(
+  future: Future.wait([
+    techdb.fetchTechDetails(widget.ticketId),
+    repo.fetchComplaintByTicketId(widget.ticketId),
+  ]),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return const Center(child: Text('Technician not assigned'));
-                }
+    if (!snapshot.hasData) {
+      return const Center(child: Text('Technician not assigned'));
+    }
 
-                final techDetails = snapshot.data!;
+    final techDetails = snapshot.data![0] as TechModel?;
+    final complaint = snapshot.data![1] as RaiseComplaintModel?;
 
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Technician ID: ${techDetails.techId}',
-                      style: TextStyle(color: Colors.black54, fontSize: 12),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple.shade100,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'In Progress',
-                        style: const TextStyle(
-                          color: Colors.deepPurple,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+    if (techDetails == null) {
+      return const Center(child: Text('Technician not assigned'));
+    }
+
+    final status = complaint?.complaintStatus ?? 'Pending';
+
+    // ✅ Color based on status
+    Color statusColor;
+    Color statusBgColor;
+    switch (status) {
+      case 'Completed':
+        statusColor = Colors.green;
+        statusBgColor = Colors.green.shade100;
+        break;
+      case 'In Progress':
+        statusColor = Colors.deepPurple;
+        statusBgColor = Colors.deepPurple.shade100;
+        break;
+      case 'Assigned':
+        statusColor = Colors.blue;
+        statusBgColor = Colors.blue.shade100;
+        break;
+      default:
+        statusColor = Colors.orange;
+        statusBgColor = Colors.orange.shade100;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Technician ID: ${techDetails.techId}',
+          style: const TextStyle(color: Colors.black54, fontSize: 12),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: statusBgColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              color: statusColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
+          ),
+        ),
+      ],
+    );
+  },
+),
           ],
         ),
       ),
@@ -95,8 +140,9 @@ class _JobdetailsState extends State<Jobdetails> {
           children: [
             Column(
               children: [
+//=========================Fetch technician details============================
                 FutureBuilder<TechModel?>(
-                  future: repo.fetchTechDetails(widget.ticketId),
+                  future: techdb.fetchTechDetails(widget.ticketId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -152,7 +198,7 @@ class _JobdetailsState extends State<Jobdetails> {
                                 techDetails.phone,
                                 style: const TextStyle(color: Colors.white),
                               ),
-                              //======================Button call & message======================
+  //======================Button call & message====================================
                               SizedBox(height: 15),
                               Row(
                                 spacing: 15,
@@ -210,11 +256,18 @@ class _JobdetailsState extends State<Jobdetails> {
                   },
                 ),
 
-                //===========================2nd Container===============================
+  //===========================Track service completion===============================
                 SizedBox(height: 20),
                 FutureBuilder<RaiseComplaintModel?>(
                   future: repo.fetchComplaintByTicketId(widget.ticketId),
                   builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_complaint == null) {
+                          setState(() => _complaint = snapshot.data);
+                        }
+                      });
+                    }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -240,7 +293,7 @@ class _JobdetailsState extends State<Jobdetails> {
                     final complaint = snapshot.data!;
 
                     final timelineItems = getTimelineItems(
-                      complaint.complaintStatus ?? 'Pending',
+                      complaint.complaintStatus ?? '',
                     );
 
                     return Container(
@@ -345,8 +398,9 @@ class _JobdetailsState extends State<Jobdetails> {
                 ),
 
                 const SizedBox(height: 20),
+//========================= view invoice payment button========================
                 SizedBox(
-                     width: double.infinity,
+                  width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
@@ -365,10 +419,7 @@ class _JobdetailsState extends State<Jobdetails> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2C313A),
                       elevation: 0,
-                      minimumSize: const Size(
-                        double.infinity,
-                        50,
-                      ), 
+                      minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -415,14 +466,14 @@ class _JobdetailsState extends State<Jobdetails> {
       ),
       TimelineItem(
         title: "Service in Progress",
-        time: status == "In Progress" || status == "Completed"
+        time: status == "Assigned" || status == "Completed"
             ? "Completed"
             : "Pending",
-        completed: status == "In Progress" || status == "Completed",
+        completed: status == "Assigned" || status == "Completed",
       ),
       TimelineItem(
         title: "Service Completed",
-        time: status == "Completed" ? "Completed" : "Pending",
+        time: status == "Completed" ? "Completed" : "pending",
         completed: status == "Completed",
       ),
     ];
@@ -440,6 +491,7 @@ class _JobdetailsState extends State<Jobdetails> {
     }
   }
 
+  //=======================Send message=================================
   Future<void> _sendSms(String phone) async {
     final Uri uri = Uri(scheme: 'sms', path: phone);
     if (await canLaunchUrl(uri)) {
