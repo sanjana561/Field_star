@@ -29,13 +29,13 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(      
         backgroundColor: Colors.white70,
         title: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-//======================Heading===========================================
             const Text(
               'Dashboard',
               style: TextStyle(
@@ -44,30 +44,27 @@ class _DashboardState extends State<Dashboard> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-//=========================UserName=======================================
-              children: [
-                Text(
-                  'Welcome to the dashboard',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.black.withOpacity(0.08),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_active,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 5),
+            Text(
+              'Welcome to the dashboard',
+              style: const TextStyle(color: Colors.black87, fontSize: 12),
             ),
           ],
         ),
+
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.go('/profile');
+
+            },
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              size: 25,
+              color: Colors.black,
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(15),
@@ -77,7 +74,7 @@ class _DashboardState extends State<Dashboard> {
             children: [
               Stack(
                 children: [
-                  //   Container(height: 200, color: Colors.white70),
+                 
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 15,
@@ -220,7 +217,8 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
-//================Button Style=============================
+
+  //================Button Style=============================
   ButtonStyle btnStyle(Color color) => ElevatedButton.styleFrom(
     backgroundColor: color,
     foregroundColor: Colors.white,

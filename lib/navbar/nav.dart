@@ -7,10 +7,11 @@ import 'package:field_star_customer_app/pages/dashboard/dashboard.dart';
 import 'package:field_star_customer_app/pages/final%20screen/final.dart';
 import 'package:field_star_customer_app/pages/jobdetails/invoice_payment.dart';
 import 'package:field_star_customer_app/pages/jobdetails/jobdetails.dart';
+import 'package:field_star_customer_app/pages/profile/profile_page.dart';
 import 'package:field_star_customer_app/pages/rating/rating.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-// ✅ removed unused: import 'package:path/path.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -134,6 +135,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/login',
           builder: (_, __) => const LoginScreen(), // ✅ fixed: __ for second param
+        ),
+         GoRoute(
+          path: '/profile',
+          builder: (_, __) => const ProfilePage(), // ✅ fixed: __ for second param
         ),
       ],
     ),

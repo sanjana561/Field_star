@@ -4,30 +4,34 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
- 
+
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
- 
+
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _nameController = TextEditingController(); 
+  final _hotelcontroller = TextEditingController(); 
+  final _placenamecontroller=TextEditingController();
+  final _locationController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
- 
+
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
- 
-  // Brand colors — light mode palette
-  static const _cardBg     = Color(0xFFFFFFFF);
-  static const _textDark   = Color(0xFF1A2332);
-  static const _textMuted  = Color(0xFF8A97A8);
-  static const _inputBg    = Color(0xFFF5F8FA);
-  static const _border     = Color(0xFFE2E8EF);
 
- 
+  // Brand colors — light mode palette
+  static const _cardBg = Color(0xFFFFFFFF);
+  static const _textDark = Color(0xFF1A2332);
+  static const _textMuted = Color(0xFF8A97A8);
+  static const _inputBg = Color(0xFFF5F8FA);
+  static const _border = Color(0xFFE2E8EF);
+
   @override
   void initState() {
     super.initState();
@@ -35,20 +39,14 @@ class _SignUpScreenState extends State<SignUpScreen>
       vsync: this,
       duration: const Duration(milliseconds: 750),
     );
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.10),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.10), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
   }
- 
+
   @override
   void dispose() {
     _animController.dispose();
@@ -56,52 +54,79 @@ class _SignUpScreenState extends State<SignUpScreen>
     _passwordController.dispose();
     super.dispose();
   }
- void _showSnack(String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      backgroundColor: const Color(0xFF1A2332),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ),
-  );
-}
-void _handleSignUp() async {
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF1A2332),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+ Future<void> _handleSignUp() async {
+  final supabase = Supabase.instance.client;
+
+  final name = _nameController.text.trim();
+  final phone = _phoneController.text.trim();
+  final hotel = _hotelcontroller.text.trim();
+  final location = _locationController.text.trim();
+  final place = _placenamecontroller.text.trim();
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
 
-  if (email.isEmpty || password.isEmpty) {
-    _showSnack('Please fill in all fields');
+  debugPrint('name=$name');
+  debugPrint('phone=$phone');
+  debugPrint('hotel=$hotel');
+  debugPrint('location=$location');
+  debugPrint('place=$place');
+
+  if (name.isEmpty || phone.isEmpty || hotel.isEmpty || email.isEmpty || password.isEmpty) {
+    _showSnack('Please fill all fields');
     return;
   }
-
-  if (password.length < 6) {
-    _showSnack('Password must be at least 6 characters');
-    return;
-  }
-
-  setState(() => _isLoading = true);
 
   try {
-   final response = await Supabase.instance.client.auth.signUp(
-  email: email,
-  password: password,
-);
+    setState(() => _isLoading = true);
 
-if (response.user != null) {
-  context.go('/Home');
-} else {
-      _showSnack('Signup failed. Please try again.');
+    final authRes = await supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
+
+    final user = authRes.user;
+    if (user == null) {
+      _showSnack('User not created');
+      return;
     }
-  } on AuthException catch (e) {
-    _showSnack('Auth error: ${e.message}');
-    debugPrint('AuthException: ${e.message} | code: ${e.statusCode}');
-  } catch (e, stack) {
-    _showSnack('Error: ${e.toString()}');
-    debugPrint('Signup error: $e');
-    debugPrint('$stack');
+
+    await supabase.from('customer').update({
+      'cust_name': name,
+      'cust_phno': phone,
+      'cust_location': location,
+      'cust_place': place,
+      'cust_hotelname': hotel,
+    }).eq('id', user.id);
+
+    final check = await supabase
+        .from('customer')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+
+    debugPrint('Saved customer: $check');
+
+    context.go('/Home');
+  } on PostgrestException catch (e) {
+    debugPrint('Database error: ${e.message}');
+    _showSnack(e.message);
+  } catch (e) {
+    debugPrint('Error: $e');
+    _showSnack(e.toString());
   } finally {
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 }
   @override
@@ -141,10 +166,7 @@ if (response.user != null) {
                   ),
                 ),
                 const SizedBox(height: 28),
-                FadeTransition(
-                  opacity: _fadeAnim,
-                  child: _buildSignInRow(),
-                ),
+                FadeTransition(opacity: _fadeAnim, child: _buildSignInRow()),
                 const SizedBox(height: 32),
               ],
             ),
@@ -153,7 +175,7 @@ if (response.user != null) {
       ),
     );
   }
- 
+
   Widget _buildLogo() {
     return Column(
       children: [
@@ -178,8 +200,7 @@ if (response.user != null) {
                   ),
                 ],
               ),
-              child: const Icon(Icons.people,
-                  color: Colors.white, size: 28),
+              child: const Icon(Icons.people, color: Colors.white, size: 28),
             ),
 
             const SizedBox(width: 12),
@@ -206,7 +227,7 @@ if (response.user != null) {
       ],
     );
   }
- 
+
   Widget _buildCard() {
     return Container(
       padding: const EdgeInsets.all(26),
@@ -229,20 +250,47 @@ if (response.user != null) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildLabel('Hotel Name'),
+          _buildCustomField(
+            _hotelcontroller,
+            'Hotel Grand Plaza',
+            Icons.business,
+          ),
+          const SizedBox(height: 16),
           _buildLabel('Email'),
-          const SizedBox(height: 8),
-          _buildEmailField(),
-          const SizedBox(height: 20),
+          _buildCustomField(
+            _emailController,
+            'your@email.com',
+            Icons.mail_outline,
+          ),
+           const SizedBox(height: 16),
           _buildLabel('Password'),
-          const SizedBox(height: 8),
-          _buildPasswordField(),
+          _buildPasswordField(  ),
+          const SizedBox(height: 16),
+          _buildLabel('Phone Number'),
+          _buildCustomField(
+            _phoneController,
+            '+91 00000 00000',
+            Icons.phone_android,
+          ),
+          const SizedBox(height: 16),
+          _buildLabel('Full Name'),
+          _buildCustomField(_nameController, '', Icons.people),
+          const SizedBox(height: 16),
+          _buildLabel('Location/Area'),
+          _buildCustomField(
+            _locationController,
+            'Mangaluru',
+            Icons.location_on_outlined,
+          ),
+
           const SizedBox(height: 28),
           _buildSignUpButton(),
         ],
       ),
     );
   }
- 
+
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -254,72 +302,34 @@ if (response.user != null) {
       ),
     );
   }
- 
-  Widget _buildEmailField() {
+
+  Widget _buildCustomField(
+    TextEditingController controller,
+    String hint,
+    IconData icon,
+  ) {
     return Container(
+      margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
         color: _inputBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _border, width: 1.2),
       ),
       child: TextField(
-        controller: _emailController,
-        keyboardType: TextInputType.emailAddress,
-        style: const TextStyle(
-          fontSize: 15,
-          color: _textDark,
-        ),
-        decoration: const InputDecoration(
-          hintText: 'your@email.com',
-          hintStyle: TextStyle(color: _textMuted, fontSize: 15),
-          prefixIcon: Icon(Icons.mail_outline_rounded,
-              color: _textMuted, size: 20),
-          border: InputBorder.none,
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
-      ),
-    );
-  }
- 
-  Widget _buildPasswordField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: _inputBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border, width: 1.2),
-      ),
-      child: TextField(
-        controller: _passwordController,
-        obscureText: _obscurePassword,
-        style: const TextStyle(
-          fontSize: 15,
-          color: _textDark,
-        ),
+        controller: controller,
         decoration: InputDecoration(
-          hintText: 'Enter your password',
-          hintStyle: const TextStyle(color: _textMuted, fontSize: 15),
-          prefixIcon: const Icon(Icons.lock_outline_rounded,
-              color: _textMuted, size: 20),
-          suffixIcon: GestureDetector(
-            onTap: () =>
-                setState(() => _obscurePassword = !_obscurePassword),
-            child: Icon(
-              _obscurePassword
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              color: _textMuted,
-              size: 20,
-            ),
-          ),
+          hintText: hint,
+          prefixIcon: Icon(icon, color: _textMuted, size: 20),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
       ),
     );
   }
- 
+
   Widget _buildSignUpButton() {
     return SizedBox(
       width: double.infinity,
@@ -357,28 +367,28 @@ if (response.user != null) {
                     ),
                   ),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded,
-                      size: 18, color: Colors.black87),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 18,
+                    color: Colors.black87,
+                  ),
                 ],
               ),
       ),
     );
   }
- 
+
   Widget _buildSignInRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
           'Already have an account? ',
-          style: TextStyle(
-            fontSize: 14,
-            color: _textMuted,
-          ),
+          style: TextStyle(fontSize: 14, color: _textMuted),
         ),
         GestureDetector(
           onTap: () {
-          context.go('/login');
+            context.go('/login');
           },
           child: const Text(
             'Sign In',
@@ -392,4 +402,43 @@ if (response.user != null) {
       ],
     );
   }
-    }
+
+   Widget _buildPasswordField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: _inputBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border, width: 1.2),
+      ),
+      child: TextField(
+        controller: _passwordController,
+        obscureText: _obscurePassword,
+        style: const TextStyle(
+          fontSize: 15,
+          color: _textDark,
+          fontWeight: FontWeight.w400,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Enter your password',
+          hintStyle: const TextStyle(color: _textMuted, fontSize: 15),
+          prefixIcon: const Icon(Icons.lock_outline_rounded,
+              color: _textMuted, size: 20),
+          suffixIcon: GestureDetector(
+            onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+            child: Icon(
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: _textMuted,
+              size: 20,
+            ),
+          ),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+      ),
+    );
+  }
+ 
+}

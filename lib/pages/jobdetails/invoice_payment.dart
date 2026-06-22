@@ -429,7 +429,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
         child: Row(
           children: [
             SizedBox(
-              width: 200,
+              width: 180,
               child: OutlinedButton.icon(
                 onPressed: downloadReceipt,
                 icon: const Icon(Icons.download, size: 18),
@@ -442,7 +442,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
             ),
             const SizedBox(width: 10),
             SizedBox(
-              width: 200,
+              width: 180,
               child: ElevatedButton(
                 onPressed: () {
                   context.go(

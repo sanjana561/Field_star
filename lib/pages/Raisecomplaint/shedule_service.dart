@@ -2,10 +2,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:field_star_customer_app/model/raise_complaint_model.dart';
-import 'package:field_star_customer_app/pages/Raisecomplaint/servicecompleted.dart';
-import 'package:field_star_customer_app/service/raise_complaint_db.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ScheduleServicePage extends StatefulWidget {
   final String tickedID;
@@ -45,54 +44,66 @@ class _ScheduleServicePageState extends State<ScheduleServicePage> {
     return (1000 + random.nextInt(9000)).toString();
   }
 
-  Future<void> _onSubmitComplaint() async {
-    final ticketId = generateTicketId();
-    final otp = generateOtp();
+Future<void> _submitFullcomplaint(
+  RaiseComplaintModel complaint,
+) async {
+  final user = Supabase.instance.client.auth.currentUser;
 
-    final repo = RaiseComplaintDb();
-
-    try {
-      // ✅ Upload image if exists
-      String? imageUrl;
-      String? audioUrl;
-
-      if (widget.imageFile != null) {
-        imageUrl = await repo.uploadImage(widget.imageFile!);
-      }
-
-      if (widget.audioPath != null) {
-        audioUrl = await repo.uploadAudio(widget.audioPath!);
-      }
-
-      final finalComplaint = RaiseComplaintModel(
-        categoryName: widget.categoryName,
-        serviceRequired: widget.equipmentName,
-        problem: widget.problemDescription,
-        priorityLevel: widget.priorityStatus,
-        date: DateTime.now(),
-        tickectid: ticketId,
-        otp: otp,
-        imageUrl: imageUrl,
-        audioUrl: audioUrl,
-      );
-
-      await repo.submitFullComplaint(finalComplaint);
-
-      if (mounted) {
-        context.push(
-          '/servicecompleted',
-          extra: {'tickectid': ticketId, 'otp': otp},
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Submission failed: $e')));
-      }
-    }
+  if (user == null) {
+    throw Exception('User not logged in');
   }
 
+  await Supabase.instance.client.from('Raise_complaint').insert({
+    'Category_name': complaint.categoryName,
+    'service_required': complaint.serviceRequired,
+    'problem': complaint.problem,
+    'priority_level': complaint.priorityLevel,
+    'Date': complaint.date?.toIso8601String(),
+    'tickectid': complaint.tickectid,
+    'otp': complaint.otp,
+    'image_url': complaint.imageUrl,
+    'audio_url': complaint.audioUrl,
+    'customer_id': user.id,
+    'complaint_status': 'pending',
+    'tech_status': 'Pending',
+  });
+}
+Future<void> _onSubmitComplaint() async {
+  final ticketId = generateTicketId();
+  final otp = generateOtp();
+
+  try {
+    final complaint = RaiseComplaintModel(
+      categoryName: widget.categoryName,
+      serviceRequired: widget.equipmentName,
+      problem: widget.problemDescription,
+      priorityLevel: widget.priorityStatus,
+      date: DateTime.now(),
+      tickectid: ticketId,
+      otp: otp,
+      imageUrl: null,
+      audioUrl: null,
+    );
+
+    await _submitFullcomplaint(complaint);
+
+    if (mounted) {
+      context.push(
+        '/servicecompleted',
+        extra: {
+          'tickectid': ticketId,
+          'otp': otp,
+        },
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Submission failed: $e'),
+      ),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
