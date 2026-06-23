@@ -8,6 +8,7 @@ class CustomerModel {
   final int totalEquipment;
   final double revenueYtd;
    final int complaintCount; 
+     final List<String> ticketIds;
 
   CustomerModel({
     this.id,
@@ -19,6 +20,7 @@ class CustomerModel {
     required this.totalEquipment,
     required this.revenueYtd,
    this.complaintCount = 0,
+   this.ticketIds = const [],
   });
 
   factory CustomerModel.fromMap(Map<String, dynamic> map) {
@@ -32,6 +34,7 @@ class CustomerModel {
       totalEquipment: (map['total_equipment'] as num?)?.toInt() ?? 0,
       revenueYtd: (map['revenue_ytd'] as num?)?.toDouble() ?? 0.0,
       complaintCount: (map['complaint_count'] as num?)?.toInt() ?? 0,
+       ticketIds: List<String>.from(map['ticketid'] ?? []),
       
     );
   }

@@ -29,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(      
+      appBar: AppBar(
         backgroundColor: Colors.white70,
         title: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -56,7 +56,6 @@ class _DashboardState extends State<Dashboard> {
           IconButton(
             onPressed: () {
               context.go('/profile');
-
             },
             icon: const Icon(
               Icons.account_circle_outlined,
@@ -74,7 +73,6 @@ class _DashboardState extends State<Dashboard> {
             children: [
               Stack(
                 children: [
-                 
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 15,
@@ -136,7 +134,6 @@ class _DashboardState extends State<Dashboard> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  // Error
                   if (snapshot.hasError) {
                     return Center(
                       child: Text(
@@ -146,7 +143,6 @@ class _DashboardState extends State<Dashboard> {
                     );
                   }
 
-                  // Empty
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(
                       child: Padding(
@@ -155,21 +151,31 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     );
                   }
-                  final complaints = snapshot.data!;
+
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: complaints.length,
+                    itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-                      final c = complaints[index];
-                      return JobSummaryCard(
-                        ticketId: 'TCK-${c.tickectid ?? index}',
-                        status: c.priorityLevel ?? 'Pending',
-                        equipment: c.serviceRequired ?? '',
-                        issue: c.problem ?? '',
-                        technician: c.technicianName ?? '',
-                        onTap: () =>
-                            context.go('/jobdescription', extra: c.tickectid),
+                      final c = snapshot.data![index];
+                      final done =
+                          c.complaintStatus?.toLowerCase() == 'completed';
+
+                      return Opacity(
+                        opacity: done ? 0.5 : 1.0,
+                        child: IgnorePointer(
+                          ignoring: done,
+                          child: JobSummaryCard(
+                            ticketId: c.tickectid ?? 'N/A',
+                            status: c.complaintStatus ?? 'Pending',
+                            equipment: c.serviceRequired ?? '',
+                            issue: c.problem ?? '',
+                            technician: c.technicianName ?? 'Unassigned',
+                            complaintstatus: c.complaintStatus ?? 'pending',
+                            onTap: () =>
+                                context.go('/jobdescription', extra: c),
+                          ),
+                        ),
                       );
                     },
                   );

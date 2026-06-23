@@ -40,22 +40,22 @@ class RaiseComplaintModel {
   });
 
   factory RaiseComplaintModel.fromMap(Map<String, dynamic> map) {
-    return RaiseComplaintModel(
-      id: map['id'],
-      categoryName: map['Category_name'] ?? '',
-      serviceRequired: map['service_required'],
-      problem: map['problem'],
-      priorityLevel: map['priority_level'],
-      date: map['Date'] != null ? DateTime.parse(map['Date']) : null,
-      tickectid: map['tickectid'] ?? '',
-      otp: map['otp'] ?? '',
-      imageUrl: map['image_url'],
-      audioUrl: map['audio_url'],
-      complaintStatus: map['complaint_status'],
-      technicianName: map['technician_name'],
-      customerId: map['customer_id'],
-    );
-  }
+  return RaiseComplaintModel(
+    id: (map['id'] as num?)?.toInt(),
+    categoryName: map['Category_name']?.toString() ?? '',
+    serviceRequired: map['service_required']?.toString(),
+    problem: map['problem']?.toString(),
+    priorityLevel: map['priority_level']?.toString(),
+    date: map['Date'] != null ? DateTime.tryParse(map['Date'].toString()) : null,
+    tickectid: map['tickectid']?.toString() ?? '',
+    otp: map['otp']?.toString() ?? '',
+    imageUrl: map['image_url']?.toString(),
+    audioUrl: map['audio_url']?.toString(),
+    complaintStatus: map['complaint_status']?.toString(),
+    technicianName: map['technician_name']?.toString(),
+    customerId: map['customer_id']?.toString(),
+  );
+}
 
   Map<String, dynamic> toMap() {
     return {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:field_star_customer_app/auth/login.dart';
+import 'package:field_star_customer_app/model/raise_complaint_model.dart';
 import 'package:field_star_customer_app/navbar/shell.dart';
 import 'package:field_star_customer_app/pages/Raisecomplaint/servicecompleted.dart';
 import 'package:field_star_customer_app/pages/dashboard/dashboard.dart';
@@ -83,8 +84,8 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/jobdescription',
           builder: (context, state) {
-            final ticketId = state.extra as String? ?? ''; 
-            return Jobdetails(ticketId: ticketId);
+            final complaint = state.extra as RaiseComplaintModel;
+            return Jobdetails(complaint: complaint);
           },
         ),
 
@@ -116,7 +117,8 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/rating',
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>? ?? {}; // ✅ null-safe
+            final extra =
+                state.extra as Map<String, dynamic>? ?? {}; // ✅ null-safe
             return RateServicePage(
               ticketId: extra['ticketId'] ?? '',
               technicianId: extra['technicianId'] ?? '',
@@ -129,16 +131,19 @@ final GoRouter appRouter = GoRouter(
 
         GoRoute(
           path: '/finalpage',
-          builder: (_, __) => const ThankYouPage(), // ✅ fixed: __ for second param
+          builder: (_, __) =>
+              const ThankYouPage(), // ✅ fixed: __ for second param
         ),
 
         GoRoute(
           path: '/login',
-          builder: (_, __) => const LoginScreen(), // ✅ fixed: __ for second param
+          builder: (_, __) =>
+              const LoginScreen(), // ✅ fixed: __ for second param
         ),
-         GoRoute(
+        GoRoute(
           path: '/profile',
-          builder: (_, __) => const ProfilePage(), // ✅ fixed: __ for second param
+          builder: (_, __) =>
+              const ProfilePage(), // ✅ fixed: __ for second param
         ),
       ],
     ),

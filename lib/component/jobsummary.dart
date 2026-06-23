@@ -8,6 +8,7 @@ class JobSummaryCard extends StatelessWidget {
   final String technician;
   final String? eta;
   final VoidCallback? onTap;
+  final String? complaintstatus;
 
   const JobSummaryCard({
     super.key,
@@ -18,6 +19,7 @@ class JobSummaryCard extends StatelessWidget {
     required this.technician,
      this.eta,
     this.onTap,
+     this.complaintstatus,
   });
 
   @override
@@ -136,13 +138,24 @@ class JobSummaryCard extends StatelessWidget {
 
                 const Spacer(),
 
-                // Text(
-                //   eta,
-                //   style: const TextStyle(
-                //     color: Colors.deepOrange,
-                //     fontWeight: FontWeight.w600,
-                //   ),
-                // ),
+               Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    complaintstatus?? 'pending',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
           ],

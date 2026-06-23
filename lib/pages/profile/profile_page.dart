@@ -9,7 +9,6 @@ const _bg = Color(0xFFF7F6F3);
 const _surface = Color(0xFFFFFFFF);
 const _tint = Color(0xFFEEF4F1);
 const _accent = Color(0xFF2D6A4F);
-const _accentLt = Color(0xFFE8F5E9);
 const _text = Color(0xFF1A1A1A);
 const _muted = Color(0xFF6B7280);
 const _border = Color(0xFFE5E4E0);
@@ -91,37 +90,39 @@ class _ProfilePageState extends State<ProfilePage> {
             },
           ),
           _sectionLabel('Activity'),
-         FutureBuilder<Map<String, int>>(
-  future: repo.fetchComplaintStats(), // Ensure 'repo' is initialized
-  builder: (context, snapshot) {
-    // 1. Show loading state
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    }
+          FutureBuilder<Map<String, int>>(
+            future: repo.fetchComplaintStats(),
+            builder: (context, snapshot) {
+              // 1. Show loading state
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-    // 2. Handle errors or empty data
-    final stats = snapshot.data ?? {'total': 0, 'completed': 0, 'pending': 0};
+              // 2. Handle errors or empty data
+              final stats =
+                  snapshot.data ?? {'total': 0, 'completed': 0, 'pending': 0};
 
-    // 3. Return the UI
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        statCard(
-          value: stats['total'].toString(),
-          label: 'Total Complaint',
-        ),
-        statCard(
-          value: stats['completed'].toString(),
-          label: 'Completed',
-        ),
-        statCard(
-          value: stats['pending'].toString(),
-          label: 'Pending',
-        ),
-      ],
-    );
-  },
-),
+              // 3. Return the UI
+              return Row(
+                spacing: 12,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  statCard(
+                    value: stats['total'].toString(),
+                    label: 'Total Complaint',
+                  ),
+                  statCard(
+                    value: stats['completed'].toString(),
+                    label: 'Completed',
+                  ),
+                  statCard(
+                    value: stats['pending'].toString(),
+                    label: 'Pending',
+                  ),
+                ],
+              );
+            },
+          ),
           _sectionLabel('Recent Services'),
           FutureBuilder<List<RaiseComplaintModel>>(
             future: repo.fetchCompletedComplaints(),
@@ -221,91 +222,95 @@ class _ProfilePageState extends State<ProfilePage> {
   );
 
   // ── identity card ─────────────────────────────────────────────────────────
-  Widget _identityCard(CustomerModel customer) {
-    String initials = customer.customerName.isNotEmpty
-        ? customer.customerName
-              .trim()
-              .split(' ')
-              .map((e) => e[0])
-              .take(2)
-              .join()
-              .toUpperCase()
-        : 'C';
+Widget _identityCard(CustomerModel customer) {
+  String initials = customer.customerName.isNotEmpty
+      ? customer.customerName
+            .trim()
+            .split(' ')
+            .map((e) => e[0])
+            .take(2)
+            .join()
+            .toUpperCase()
+      : 'C';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _border),
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(width: 4, color: _accent),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 62,
-                        height: 62,
-                        decoration: BoxDecoration(
-                          color: _accent,
-                          borderRadius: BorderRadius.circular(12),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Container(
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: _accent),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 62,
+                      height: 62,
+                      decoration: BoxDecoration(
+                        color: _accent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        initials,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          initials,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            customer.customerName,
+                            style: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                              color: _text,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
+                          const SizedBox(height: 3),
+                          Text(
+                            'CUSTOMER · #${customer.id?.substring(0, 6).toUpperCase()}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: _muted,
+                              letterSpacing: .08,
+                            ),
+                          ),
 
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              customer.customerName,
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w700,
-                                color: _text,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'CUSTOMER · #${customer.id?.substring(0, 6).toUpperCase()}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: _muted,
-                                letterSpacing: .08,
-                              ),
-                            ),
-                          ],
-                        ),
+                          // ── Ticket IDs ────────────────────────────
+                          const SizedBox(height: 10),
+                         
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ── contact card ──────────────────────────────────────────────────────────
   Widget _contactCard(CustomerModel customer) => _card([

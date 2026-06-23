@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:field_star_customer_app/model/customer_model.dart';
 import 'package:field_star_customer_app/model/raise_complaint_model.dart';
 import 'package:field_star_customer_app/model/service_rating_model.dart';
-import 'package:field_star_customer_app/model/tech_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RaiseComplaintDb {
@@ -154,7 +153,7 @@ class RaiseComplaintDb {
     final total = complaints.length;
 
     final completed = complaints.where((item) {
-      return item['complaint_status']?.toString().toLowerCase() == 'Completed';
+      return item['complaint_status']?.toString() == 'Completed';
     }).length;
 
     final pending = complaints.where((item) {
@@ -165,24 +164,37 @@ class RaiseComplaintDb {
   }
 
   //======================Fetch customer details===============================
-  Future<CustomerModel?> fetchCustomerDetails() async {
-    try {
-      final user = _supabase.auth.currentUser;
+ Future<CustomerModel?> fetchCustomerDetails() async {
+  try {
+    final user = _supabase.auth.currentUser;
+    print('Current user: ${user?.id}');
 
-      if (user == null) return null;
+    if (user == null) return null;
 
-      final response = await _supabase
-          .from('customer')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
+    final response = await _supabase
+        .from('customer')
+        .select('*, Raise_complaint(id, tickectid)') 
+        .eq('id', user.id)
+        .maybeSingle();
 
-      if (response == null) return null;
+    print('Customer response: $response');
+    if (response == null) return null;
 
-      return CustomerModel.fromMap(response);
-    } catch (e) {
-      print('Error fetching customer: $e');
-      return null;
-    }
+    // Extract ticket IDs from joined complaints
+    final complaints = response['Raise_complaint'] as List? ?? [];
+    final ticketIds = complaints
+        .map((c) => c['tickectid']?.toString() ?? '')
+        .where((t) => t.isNotEmpty)
+        .toList();
+
+    return CustomerModel.fromMap({
+      ...response,
+      'complaint_count': complaints.length,
+      'ticket_ids': ticketIds,
+    });
+  } catch (e) {
+    print('Error fetching customer: $e');
+    return null;
   }
+}
 }
