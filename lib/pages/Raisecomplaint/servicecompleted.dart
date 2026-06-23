@@ -167,7 +167,7 @@ class Servicecompleted extends StatelessWidget {
                 width: 500,
                 child: ElevatedButton(
                   onPressed: () {
-                context.go('/Home',);
+                      context.push('/Home');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 253, 135, 25), // Very dark navy-charcoal button
