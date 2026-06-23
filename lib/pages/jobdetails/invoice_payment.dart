@@ -118,6 +118,13 @@ class InvoicePaymentPage extends StatefulWidget {
 
 class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
   final repo = TechdetaisDb();
+  String _formatDate(DateTime date) {
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  return '${months[date.month - 1]} ${date.day}, ${date.year}';
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,15 +223,14 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                   ),
 
                   const SizedBox(height: 8),
-                  const Text(
-                    "Invoice #INV-2451",
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
-                  ),
-                  const Text(
-                    "Date: May 25, 2026",
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 11),
-                  ),
-
+                Text(
+  'Invoice #INV-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+  style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+),
+Text(
+  'Date: ${_formatDate(DateTime.now())}',
+  style: const TextStyle(color: Colors.blueGrey, fontSize: 11),
+),
                   const Divider(height: 28),
 
                   const Text(
@@ -295,7 +301,7 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -307,8 +313,10 @@ class _InvoicePaymentPageState extends State<InvoicePaymentPage> {
                               ),
                             ),
                             SizedBox(height: 3),
+                            
                             Text(
-                              "Paid via UPI on May 25, 2026 at 2:30 PM",
+                            
+                             'Paid via UPI on  ${_formatDate(DateTime.now())}',
                               style: TextStyle(
                                 color: Colors.blueGrey,
                                 fontSize: 11,

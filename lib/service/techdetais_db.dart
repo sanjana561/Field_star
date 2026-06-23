@@ -31,7 +31,11 @@ Future<TechModel?> fetchTechDetails(String ticketId) async {
 
   return TechModel.fromMap(technicianResponse);
 }
-
+Future<int> generateInvoiceNumber() async {
+  final response = await _supabase
+      .rpc('get_next_invoice_number');
+  return response as int;
+}
 
 
 
