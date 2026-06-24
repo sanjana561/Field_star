@@ -34,76 +34,95 @@ class _ScheduleServicePageState extends State<ScheduleServicePage> {
   DateTime? selectedDate;
   String serviceType = 'Emergency';
 
+//=========================generate random tickect id====================================
   String generateTicketId() {
     final random = Random();
     return 'FS${100000 + random.nextInt(900000)}';
   }
 
+//========================generate otp===================================
   String generateOtp() {
     final random = Random();
     return (1000 + random.nextInt(9000)).toString();
   }
+//========================submit complaint================================
+  Future<void> _submitFullcomplaint(
+    RaiseComplaintModel complaint, {
+    File? imageFile,
+  }) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) throw Exception('User not logged in');
 
-Future<void> _submitFullcomplaint(
-  RaiseComplaintModel complaint,
-) async {
-  final user = Supabase.instance.client.auth.currentUser;
+    String? imageUrl;
+    if (imageFile != null) {
+      try {
+        final path =
+            '${complaint.tickectid}/${DateTime.now().millisecondsSinceEpoch}';
+       
+        await Supabase.instance.client.storage
+            .from('images')
+            .upload(path, imageFile);
 
-  if (user == null) {
-    throw Exception('User not logged in');
+        imageUrl = Supabase.instance.client.storage
+            .from('images')
+            .getPublicUrl(path);        
+      } catch (e) {
+       
+        rethrow; 
+      }
+    } 
+
+    await Supabase.instance.client.from('Raise_complaint').insert({
+      'Category_name': complaint.categoryName,
+      'service_required': complaint.serviceRequired,
+      'problem': complaint.problem,
+      'priority_level': complaint.priorityLevel,
+      'Date': complaint.date?.toIso8601String(),
+      'tickectid': complaint.tickectid,
+      'otp': complaint.otp,
+      'image_url': imageUrl,
+      'audio_url': complaint.audioUrl,
+      'customer_id': user.id,
+      'complaint_status': 'pending',
+      'tech_status': 'Pending',
+    });
   }
 
-  await Supabase.instance.client.from('Raise_complaint').insert({
-    'Category_name': complaint.categoryName,
-    'service_required': complaint.serviceRequired,
-    'problem': complaint.problem,
-    'priority_level': complaint.priorityLevel,
-    'Date': complaint.date?.toIso8601String(),
-    'tickectid': complaint.tickectid,
-    'otp': complaint.otp,
-    'image_url': complaint.imageUrl,
-    'audio_url': complaint.audioUrl,
-    'customer_id': user.id,
-    'complaint_status': 'pending',
-    'tech_status': 'Pending',
-  });
-}
-Future<void> _onSubmitComplaint() async {
-  final ticketId = generateTicketId();
-  final otp = generateOtp();
+  Future<void> _onSubmitComplaint() async {
+    final ticketId = generateTicketId();
+    final otp = generateOtp();
 
-  try {
-    final complaint = RaiseComplaintModel(
-      categoryName: widget.categoryName,
-      serviceRequired: widget.equipmentName,
-      problem: widget.problemDescription,
-      priorityLevel: widget.priorityStatus,
-      date: DateTime.now(),
-      tickectid: ticketId,
-      otp: otp,
-      imageUrl: null,
-      audioUrl: null,
-    );
-
-    await _submitFullcomplaint(complaint);
-
-    if (mounted) {
-      context.push(
-        '/servicecompleted',
-        extra: {
-          'tickectid': ticketId,
-          'otp': otp,
-        },
+    try {
+      final complaint = RaiseComplaintModel(
+        categoryName: widget.categoryName,
+        serviceRequired: widget.equipmentName,
+        problem: widget.problemDescription,
+        priorityLevel: widget.priorityStatus,
+        date: DateTime.now(),
+        tickectid: ticketId,
+        otp: otp,
+        imageUrl: null,
+        audioUrl: null,
       );
+
+      await _submitFullcomplaint(
+        complaint,
+        imageFile: widget.imageFile, 
+      );
+
+      if (mounted) {
+        context.push(
+          '/servicecompleted',
+          extra: {'tickectid': ticketId, 'otp': otp},
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Submission failed: $e')));
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Submission failed: $e'),
-      ),
-    );
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +174,7 @@ Future<void> _onSubmitComplaint() async {
                     style: TextStyle(fontSize: 12, color: Colors.blueGrey),
                   ),
                   const SizedBox(height: 24),
-
+                  
                   serviceCard(
                     type: 'Emergency',
                     title: 'Emergency Service',
@@ -174,7 +193,7 @@ Future<void> _onSubmitComplaint() async {
                         : 'Choose preferred date & time',
                     icon: Icons.calendar_month,
                     color: Colors.blueGrey,
-                    onTap: _selectDate, 
+                    onTap: _selectDate,
                   ),
 
                   const SizedBox(height: 40),
@@ -185,7 +204,7 @@ Future<void> _onSubmitComplaint() async {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child:  Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(

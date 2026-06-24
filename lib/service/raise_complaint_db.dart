@@ -8,10 +8,15 @@ class RaiseComplaintDb {
   final _supabase = Supabase.instance.client;
 
   //=====================Submit complaint=============================
-  Future<void> submitFullComplaint(RaiseComplaintModel model) async {
+  Future<void> submitFullComplaint(RaiseComplaintModel model,{File? imageFile}) async {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) throw Exception('User not logged in');
+        String? imageUrl = model.imageUrl;
+    if (imageFile != null) {
+      imageUrl = await uploadImage(model.tickectid, imageFile); // ← folder = ticketId
+    }
+
 
       await _supabase.from('customer').upsert({
         'id': user.id,
@@ -20,10 +25,13 @@ class RaiseComplaintDb {
         'cust_location': model.customerLocation,
         'cust_place': model.customerPlace,
         'cust_hotelname': model.customerHotelName,
+        
+        
       });
 
       final data = model.toMap();
       data['customer_id'] = user.id;
+       data['image_url'] = imageUrl; 
 
       await _supabase.from('Raise_complaint').insert(data);
     } catch (e) {
@@ -67,20 +75,16 @@ class RaiseComplaintDb {
   }
 
   //==================Upload Images===================================
-  Future<String?> uploadImage(File imageFile) async {
-    try {
-      final fileName = '${DateTime.now().microsecondsSinceEpoch}.jpg';
-      final path = 'uploads/$fileName';
-
-      await _supabase.storage.from('images').upload(path, imageFile);
-
-      final url = _supabase.storage.from('images').getPublicUrl(path);
-
-      return url;
-    } catch (e) {
-      throw Exception('Image upload failed: $e');
-    }
+Future<String?> uploadImage(String complaintId, File imageFile) async {
+  try {
+    final path = '$complaintId/${DateTime.now().millisecondsSinceEpoch}';
+    await _supabase.storage.from('uploads').upload(path, imageFile);
+    return _supabase.storage.from('uploads').getPublicUrl(path);
+  } catch (e) {
+    print('Image upload error: $e');
+    return null;
   }
+}
 
   //====================== Upload audio ===================================
   Future<String?> uploadAudio(String audioFilePath) async {

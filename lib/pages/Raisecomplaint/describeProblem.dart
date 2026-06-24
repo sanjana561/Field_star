@@ -234,6 +234,7 @@ class _DescribeProblemPageState extends State<DescribeProblemPage> {
                                     equipmentName: widget.equipmentName,
                                     problemDescription: problemCtrl.text.trim(),
                                     priorityStatus: priority,
+                                    imageFile: _imageFile,
                                   ),
                                 ),
                               );
