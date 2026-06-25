@@ -56,8 +56,10 @@ class _JobdetailsState extends State<Jobdetails> {
     }
 
     return Scaffold(
+        backgroundColor: Colors.white70,
+
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white70,
         leading: BackButton(
           color: Colors.black,
           onPressed: () => context.go('/Home'),
