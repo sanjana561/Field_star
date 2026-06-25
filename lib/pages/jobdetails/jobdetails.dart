@@ -33,7 +33,7 @@ class _JobdetailsState extends State<Jobdetails> {
   @override
   Widget build(BuildContext context) {
     final complaint = widget.complaint; // ← use directly, no fetch needed
-    final status = complaint.complaintStatus ?? 'Pending';
+    final status = complaint.techstatus ?? 'Pending';
 
     Color statusColor;
     Color statusBgColor;
@@ -304,7 +304,7 @@ class _JobdetailsState extends State<Jobdetails> {
       TimelineItem(title: "Complaint Registered", time: "Completed", completed: true),
       TimelineItem(
         title: "Technician Assigned",
-        time: status == "Assigned" || status == "In Progress" || status == "Completed"
+        time: status == "Assigned" || status == "Pending" || status == "Completed"
             ? "Completed" : "Pending",
         completed: status == "Assigned" || status == "In Progress" || status == "Completed",
       ),

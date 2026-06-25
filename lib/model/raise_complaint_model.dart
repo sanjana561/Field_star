@@ -17,6 +17,7 @@ class RaiseComplaintModel {
   final String? customerLocation;
   final String? customerPlace;
   final String? customerHotelName;
+  final String? techstatus;
 
   RaiseComplaintModel({
     this.id,
@@ -37,6 +38,7 @@ class RaiseComplaintModel {
     this.customerLocation,
     this.customerPlace,
     this.customerHotelName,
+    this.techstatus,
   });
 
   factory RaiseComplaintModel.fromMap(Map<String, dynamic> map) {
@@ -54,6 +56,7 @@ class RaiseComplaintModel {
     complaintStatus: map['complaint_status']?.toString(),
     technicianName: map['technician_name']?.toString(),
     customerId: map['customer_id']?.toString(),
+    techstatus: map['tech_status']?.toString()
   );
 }
 

@@ -26,15 +26,17 @@ class JobSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
+      
       onTap: onTap,
       child: Container(
+     
         margin: const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 6,
         ),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Colors.grey.shade300,
